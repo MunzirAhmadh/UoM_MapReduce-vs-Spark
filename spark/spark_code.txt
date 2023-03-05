@@ -1,0 +1,28 @@
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession
+
+val spark = SparkSession.builder.appName("SparkTest").getOrCreate();
+
+val csvFile="s3://sparkandhivedemov1/input/DelayedFlights-updated.csv"
+
+val df = spark.read.format("csv").option("inferSchema", "true").option("header","true").load(csvFile);
+
+df.createOrReplaceTempView("delay_flights");
+
+spark.sql("SELECT * from delay_flights WHERE Year is NOT NULL GROUP BY Year").show();
+
+--println("queries to run ====================================================================");
+
+spark.time(spark.sql("SELECT Year, avg((CarrierDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year").show());
+
+spark.time(spark.sql("SELECT Year, avg((NASDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year").show());
+
+spark.time(spark.sql("SELECT Year, avg((WeatherDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year").show());
+
+spark.time(spark.sql("SELECT Year, avg((LateAircraftDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year").show());
+
+spark.time(spark.sql("SELECT Year, avg((SecurityDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year").show());
+
+
+--
