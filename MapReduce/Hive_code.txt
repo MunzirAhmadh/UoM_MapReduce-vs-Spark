@@ -1,0 +1,80 @@
+sudo chown hadoop -R /var/log/hive
+mkdir /var/log/hive/user/hadoop
+
+aws s3 ls /
+
+hive -d SAMPLE=s3://aws-tc-largeobjects/CUR-TF-200-ACDENG-1/emr-lab -d DAY=2009-04-13 -d HOUR=08 -d NEXT_DAY=2009-04-13 -d NEXT_HOUR=09 -d OUTPUT=s3://<S3-BUCKET-NAME>/output/
+
+CREATE TABLE IF NOT EXISTS delay_flights (
+ id int,
+ Year int,
+ Month int,
+ DayofMonth int,
+ DayOfWeek int,
+ DepTime string,
+ CRSDepTime string,
+ ArrTime string,
+ CRSArrTime string,
+ UniqueCarrier string,
+ FlightNum int,
+ TailNum string,
+ ActualElapsedTime string,
+ CRSElapsedTime string,
+ AirTime string,
+ ArrDelay string,
+ DepDelay string,
+ Origin string,
+ Dest string,
+ Distance int,
+ TaxiIn int,
+ TaxiOut int,
+ Cancelled int,
+ CancellationCode string,
+ Diverted int,
+ CarrierDelay string,
+ WeatherDelay string,
+ NASDelay string,
+ SecurityDelay string,
+ LateAircraftDelay string)
+ COMMENT 'Delay flights Table'
+ ROW FORMAT DELIMITED
+ FIELDS TERMINATED BY ',';
+
+--load the data from S3
+LOAD DATA INPATH 's3://sparkandhivedemov1/input/DelayedFlights-updated.csv' INTO TABLE delay_flights;
+
+--to print the names of the columns as headers in result sets
+set hive.cli.print.header=true;
+
+SELECT * from delay_flights;
+
+--println("queries to run ====================================================================");
+
+SELECT Year, avg((CarrierDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year;
+
+SELECT Year, avg((NASDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year;
+
+SELECT Year, avg((WeatherDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year;
+
+SELECT Year, avg((LateAircraftDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year;
+
+SELECT Year, avg((SecurityDelay /ArrDelay)*100) from delay_flights WHERE Year is NOT NULL GROUP BY Year;
+
+
+-- some other codes
+
+--load data from HDFS
+LOAD DATA INPATH '/user/hive/data/DelayedFlights-updated.csv' INTO TABLE delay_flights;
+
+--load data from local file system
+LOAD DATA INPATH '/home/hive/DelayedFlights-updated.csv' INTO TABLE delay_flights;
+
+--use overwrite clause 
+LOAD DATA INPATH '/home/hive/DelayedFlights-updated.csv' OVERWRITE INTO TABLE delay_flights;
+
+--use insert into
+INSERT INTO dbname.tablename VALUES ('a','b','c','d');
+
+
+
+
